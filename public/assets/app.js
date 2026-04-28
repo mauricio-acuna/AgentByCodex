@@ -5,6 +5,7 @@ const state = {
   knowledge: [],
   metrics: null,
   dlq: [],
+  securityReview: null,
   audit: []
 };
 
@@ -67,6 +68,7 @@ function renderTasks() {
       state.selectedTaskId = item.dataset.taskId;
       renderTasks();
       renderResult();
+      loadSecurityReview();
     });
   });
 }
@@ -109,6 +111,51 @@ function renderFacts(result) {
   if (result.facts) return list(result.facts);
   if (result.open_items) return `<pre>${escapeHtml(JSON.stringify(result.open_items, null, 2))}</pre>`;
   return "<span class='pill muted'>none</span>";
+}
+
+function renderSecurityReview() {
+  const status = $("#security-status");
+  const root = $("#security-review");
+  const review = state.securityReview;
+
+  if (!state.selectedTaskId) {
+    status.textContent = "none";
+    status.className = "pill muted";
+    root.className = "result-empty";
+    root.textContent = "Select a task from Tasks.";
+    return;
+  }
+
+  if (!review) {
+    status.textContent = "not loaded";
+    status.className = "pill muted";
+    root.className = "result-empty";
+    root.textContent = "No review available.";
+    return;
+  }
+
+  status.textContent = review.security_status;
+  status.className = `pill ${review.security_status === "needs_review" ? "failed" : "completed"}`;
+  root.className = "result-grid";
+  root.innerHTML = `
+    <div class="kv"><strong>Risk score</strong><p>${escapeHtml(String(review.risk_score))}</p></div>
+    <div class="kv"><strong>Findings</strong>${renderFindings(review.findings)}</div>
+    <div class="kv"><strong>Approvals</strong><pre>${escapeHtml(JSON.stringify(review.approvals, null, 2))}</pre></div>
+    <div class="kv"><strong>Executions</strong><pre>${escapeHtml(JSON.stringify(review.executions, null, 2))}</pre></div>
+  `;
+}
+
+function renderFindings(findings) {
+  if (!findings || findings.length === 0) return "<span class='pill completed'>clear</span>";
+  return findings
+    .map((finding) => `
+      <article class="item">
+        <strong>${escapeHtml(finding.code)}</strong>
+        <p>${escapeHtml(finding.message)}</p>
+        <div class="meta">${pill(finding.severity)}</div>
+      </article>
+    `)
+    .join("");
 }
 
 function renderSources(sources) {
@@ -292,6 +339,22 @@ async function refresh() {
   renderMetrics();
   renderDlq();
   renderAudit();
+  await loadSecurityReview();
+}
+
+async function loadSecurityReview() {
+  if (!state.selectedTaskId) {
+    state.securityReview = null;
+    renderSecurityReview();
+    return;
+  }
+
+  try {
+    state.securityReview = await api(`/tasks/${state.selectedTaskId}/security`);
+  } catch {
+    state.securityReview = null;
+  }
+  renderSecurityReview();
 }
 
 async function checkHealth() {

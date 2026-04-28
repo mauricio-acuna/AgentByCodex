@@ -3,6 +3,7 @@ import { defaultBudgetFor, MODEL_POLICY } from "../core/costs.js";
 import { AppError } from "../core/errors.js";
 import { nowIso, uuid } from "../core/ids.js";
 import { normalizeTaskRequest } from "../core/validation.js";
+import { redactStructured } from "../security/policies.js";
 
 function classifyDomain(prompt, hint) {
   if (hint === "sre" || /incident|5xx|datadog|circleci|pipeline|build|deploy|sre/i.test(prompt)) return "sre";
@@ -138,8 +139,15 @@ export class Dispatcher {
         });
         return;
       }
+      const sanitized = redactStructured(event.result || {});
+      if (sanitized.redacted) {
+        this.audit?.record("security.output_redacted", {
+          task_id: event.task_id,
+          field: "result"
+        });
+      }
       task.status = "completed";
-      task.result = event.result;
+      task.result = sanitized.value;
       task.error = null;
       task.updated_at = nowIso();
       this.audit?.record("dispatcher.complete", { task_id: event.task_id, worker: event.worker });

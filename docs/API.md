@@ -117,6 +117,14 @@ GET /audit
 GET /tasks/{task_id}/audit
 ```
 
+## Revision de seguridad por tarea
+
+```http
+GET /tasks/{task_id}/security
+```
+
+Devuelve hallazgos como prompt injection, output redaction, permisos denegados, acciones bloqueadas, presupuesto excedido y approvals pendientes.
+
 ## Knowledge Graph
 
 Snapshot completo:

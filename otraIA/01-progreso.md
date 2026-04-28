@@ -135,6 +135,8 @@ Se avanzo con una implementacion ejecutable sin dependencias externas para no qu
 - [x] Event bus en memoria con streams equivalentes a Redis en `src/bus/inMemoryStreamBus.js`.
 - [x] Workers SRE y CS en `src/workers/`.
 - [x] Policy engine L0-L4 parcial con permisos por rol, redaccion y deteccion de prompt injection.
+- [x] Redaccion final de secretos/PII antes de persistir resultados.
+- [x] Revision de seguridad por tarea con hallazgos accionables.
 - [x] Approval workflow en `src/approvals/approvalStore.js`.
 - [x] Action executor con bloqueo L2/L3 sin approval aprobado y L4 fuera del MVP.
 - [x] Cost tracking basico por tarea en `src/core/costs.js`.
@@ -158,7 +160,7 @@ npm.cmd test
 Resultado:
 
 ```text
-15 test(s) passed
+17 test(s) passed
 ```
 
 Aviso: se alcanzaron 5 items del gate. Es momento de planificar Fase B si queremos paralelizar tracks, manteniendo el carril Node como comportamiento ejecutable de referencia.

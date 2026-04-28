@@ -36,7 +36,18 @@ export function redactSensitive(value) {
   return String(value || "")
     .replace(/(sk-[A-Za-z0-9_-]{12,})/g, "[REDACTED_API_KEY]")
     .replace(/(ghp_[A-Za-z0-9_]{12,})/g, "[REDACTED_GITHUB_TOKEN]")
+    .replace(/(AKIA[0-9A-Z]{16})/g, "[REDACTED_AWS_ACCESS_KEY]")
+    .replace(/(xox[baprs]-[A-Za-z0-9-]{12,})/g, "[REDACTED_SLACK_TOKEN]")
     .replace(/([A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,})/gi, "[REDACTED_EMAIL]");
+}
+
+export function redactStructured(value) {
+  const serialized = JSON.stringify(value);
+  const redacted = redactSensitive(serialized);
+  return {
+    value: JSON.parse(redacted),
+    redacted: serialized !== redacted
+  };
 }
 
 export class PolicyEngine {
@@ -68,4 +79,3 @@ export class PolicyEngine {
     return actionLevel === ACTION_LEVELS.L2 || actionLevel === ACTION_LEVELS.L3 || actionLevel === ACTION_LEVELS.L4;
   }
 }
-

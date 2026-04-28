@@ -8,6 +8,7 @@
 - `src/tools`: conectores mock read-only para Datadog, GitHub, CircleCI, Jira y Notion.
 - `src/memory`: Knowledge Graph local con entidades, relaciones, fuentes, confianza y busqueda temporal simple.
 - `src/security`: policy engine, permisos por rol, deteccion de prompt injection y redaccion basica.
+- `src/security/securityReview.js`: revision de seguridad por tarea usando auditoria, approvals y ejecuciones.
 - `src/approvals`: workflow de aprobacion humana.
 - `src/actions`: ejecucion controlada y auditable de acciones aprobadas.
 - `src/core`: errores, costes, budget guard, ids, auditoria y validacion.
@@ -39,9 +40,11 @@ Este MVP demuestra los contratos y flujos principales:
 8. Generar output estructurado.
 9. Crear approval request para accion sensible.
 10. Ejecutar acciones L2/L3 solo con approval aprobado.
-11. Aplicar presupuesto de tool calls y coste.
-12. Registrar auditoria y coste.
-13. Operar el flujo desde una UI interna simple.
+11. Redactar secretos/PII del output final.
+12. Generar revision de seguridad por tarea.
+13. Aplicar presupuesto de tool calls y coste.
+14. Registrar auditoria y coste.
+15. Operar el flujo desde una UI interna simple.
 
 ## DLQ y reproceso
 

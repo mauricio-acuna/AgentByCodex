@@ -11,6 +11,8 @@ Incluye:
 - Tool registry mock read-only para Datadog, GitHub, CircleCI, Jira y Notion.
 - Policy engine con roles y niveles L0-L4.
 - Deteccion basica de prompt injection en contenido no confiable.
+- Redaccion final de secretos/PII antes de persistir resultados.
+- Revision de seguridad por tarea.
 - Approval workflow.
 - Ejecucion controlada de acciones aprobadas L2/L3; L4 bloqueado.
 - Auditoria.

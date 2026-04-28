@@ -82,12 +82,16 @@ const server = createServer(async (req, res) => {
     }
 
     const taskId = routeParam(url.pathname, "/tasks/");
-    if (req.method === "GET" && taskId && !url.pathname.endsWith("/audit")) {
+    if (req.method === "GET" && taskId && !url.pathname.endsWith("/audit") && !url.pathname.endsWith("/security")) {
       return send(res, 200, app.dispatcher.getTask(taskId));
     }
 
     if (req.method === "GET" && taskId && url.pathname.endsWith("/audit")) {
       return send(res, 200, { events: app.audit.list({ taskId }) });
+    }
+
+    if (req.method === "GET" && taskId && url.pathname.endsWith("/security")) {
+      return send(res, 200, app.securityReviews.reviewTask(taskId));
     }
 
     if (req.method === "POST" && taskId && url.pathname.endsWith("/cancel")) {

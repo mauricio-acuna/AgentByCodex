@@ -83,6 +83,51 @@ test("records prompt injection evidence from untrusted tool content", async () =
   assert.equal(securityEvents[0].tool_name, "datadogGetServiceSignals");
 });
 
+test("dispatcher redacts secrets from final task output", async () => {
+  const app = createApp();
+  const task = app.dispatcher.createTask({
+    prompt: "Dame contexto de la cuenta Acme",
+    requested_by: { id: "lucia", team: "cs", roles: ["cs"] },
+    domain_hint: "customer_success"
+  });
+
+  await nextTick();
+  app.bus.publish("task.result", {
+    task_id: task.task_id,
+    worker: "test-worker",
+    result: {
+      summary: "Contact security@example.com with sk-123456789012 and AKIA1234567890ABCDEF",
+      cost: { model: "claude-sonnet", estimated_usd: 0 }
+    }
+  });
+  await nextTick();
+  const completed = app.dispatcher.getTask(task.task_id);
+  const serialized = JSON.stringify(completed.result);
+
+  assert.ok(!serialized.includes("security@example.com"));
+  assert.ok(!serialized.includes("sk-123456789012"));
+  assert.ok(!serialized.includes("AKIA1234567890ABCDEF"));
+  assert.ok(serialized.includes("[REDACTED_EMAIL]"));
+  assert.ok(app.audit.list({ taskId: task.task_id }).some((event) => event.type === "security.output_redacted"));
+});
+
+test("security review summarizes injection, approvals and redactions", async () => {
+  const app = createApp();
+  const task = app.dispatcher.createTask({
+    prompt: "Investiga por que subieron los errores 5xx del servicio billing-api",
+    requested_by: { id: "ana", team: "sre", roles: ["sre"] },
+    domain_hint: "sre"
+  });
+
+  await nextTick();
+  const review = app.securityReviews.reviewTask(task.task_id);
+
+  assert.equal(review.security_status, "needs_review");
+  assert.ok(review.findings.some((finding) => finding.code === "prompt_injection_detected"));
+  assert.ok(review.findings.some((finding) => finding.code === "pending_approval"));
+  assert.equal(review.approvals.length, 1);
+});
+
 test("knowledge graph search returns temporal sourced context", async () => {
   const app = createApp();
   const result = app.knowledgeGraph.search({
