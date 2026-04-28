@@ -50,15 +50,21 @@ function source(tool, ref) {
 }
 
 export class ToolRegistry {
-  constructor({ policy, audit, knowledgeGraph }) {
+  constructor({ policy, audit, knowledgeGraph, budgetGuard }) {
     this.policy = policy;
     this.audit = audit;
     this.knowledgeGraph = knowledgeGraph;
+    this.budgetGuard = budgetGuard;
   }
 
   async call(toolName, input, context) {
     const tool = this[toolName];
     if (!tool) throw new Error(`Unknown tool: ${toolName}`);
+    this.budgetGuard?.beforeToolCall({
+      taskId: context.task_id,
+      budget: context.budget,
+      toolName
+    });
     this.policy.assertCanAccess(context.requested_by, tool.riskLevel, {
       taskId: context.task_id,
       toolName

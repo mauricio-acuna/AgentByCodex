@@ -34,9 +34,10 @@ function streamFor(domain) {
 }
 
 export class Dispatcher {
-  constructor({ bus, audit }) {
+  constructor({ bus, audit, budgetGuard }) {
     this.bus = bus;
     this.audit = audit;
+    this.budgetGuard = budgetGuard;
     this.tasks = new Map();
   }
 
@@ -55,7 +56,10 @@ export class Dispatcher {
     const taskId = uuid();
     const traceId = uuid();
     const modelPolicy = riskLevel === "critical" ? MODEL_POLICY.OPUS : "sonnet-first-opus-escalation";
-    const budget = defaultBudgetFor(domain, riskLevel);
+    const budget = {
+      ...defaultBudgetFor(domain, riskLevel),
+      ...(request.metadata.budget || {})
+    };
     const event = {
       event_id: uuid(),
       task_id: taskId,
@@ -108,6 +112,32 @@ export class Dispatcher {
     this.bus.subscribe(STREAMS.RESULT, "dispatcher-result-listener", async (event) => {
       const task = this.tasks.get(event.task_id);
       if (!task) return;
+      try {
+        this.budgetGuard?.recordCost({
+          taskId: event.task_id,
+          budget: task.event.budget,
+          cost: event.result?.cost
+        });
+      } catch (error) {
+        task.status = "failed";
+        task.result = event.result;
+        task.error = {
+          reason: error.message,
+          code: error.code || "budget_exceeded",
+          details: error.details || {}
+        };
+        task.updated_at = nowIso();
+        this.bus.publish(STREAMS.DLQ, {
+          task_id: event.task_id,
+          failed_stream: STREAMS.RESULT,
+          failed_consumer: "dispatcher-result-listener",
+          reason: error.message,
+          code: error.code || "budget_exceeded",
+          details: error.details || {},
+          original_event: event
+        });
+        return;
+      }
       task.status = "completed";
       task.result = event.result;
       task.error = null;
@@ -121,6 +151,8 @@ export class Dispatcher {
       task.status = "failed";
       task.error = {
         reason: event.reason,
+        code: event.code,
+        details: event.details,
         failed_stream: event.failed_stream,
         failed_consumer: event.failed_consumer
       };
@@ -155,4 +187,3 @@ export class Dispatcher {
     return task;
   }
 }
-

@@ -148,6 +148,63 @@ test("metrics summarize task cost and platform counters", async () => {
   assert.equal(metrics.by_team[0].key, "cs");
 });
 
+test("tool call budget sends task to DLQ when exceeded", async () => {
+  const app = createApp();
+  const task = app.dispatcher.createTask({
+    prompt: "Investiga por que subieron los errores 5xx del servicio billing-api",
+    requested_by: { id: "ana", team: "sre", roles: ["sre"] },
+    domain_hint: "sre",
+    metadata: {
+      budget: { max_tool_calls: 1 }
+    }
+  });
+
+  await nextTick();
+  const failed = app.dispatcher.getTask(task.task_id);
+  const dlq = app.bus.list("task.dispatch.dlq");
+
+  assert.equal(failed.status, "failed");
+  assert.match(failed.error.reason, /tool calls budget/i);
+  assert.equal(dlq.length, 1);
+});
+
+test("cost budget marks completed worker result as failed and records DLQ", async () => {
+  const app = createApp();
+  const task = app.dispatcher.createTask({
+    prompt: "Dame contexto de la cuenta Acme y prepara respuesta para el cliente sobre exportacion",
+    requested_by: { id: "lucia", team: "cs", roles: ["cs"] },
+    domain_hint: "customer_success",
+    metadata: {
+      budget: { max_usd: 0.000001 }
+    }
+  });
+
+  await nextTick();
+  const failed = app.dispatcher.getTask(task.task_id);
+  const dlq = app.bus.list("task.dispatch.dlq");
+
+  assert.equal(failed.status, "failed");
+  assert.equal(failed.error.code, "budget_exceeded");
+  assert.equal(dlq.length, 1);
+  assert.equal(dlq[0].failed_stream, "task.result");
+});
+
+test("DLQ events can be replayed onto their original stream", async () => {
+  const app = createApp();
+  app.dispatcher.createTask({
+    prompt: "Investiga por que subieron los errores 5xx del servicio billing-api",
+    requested_by: { id: "guest", team: "ops", roles: ["requester"] },
+    domain_hint: "sre"
+  });
+
+  await nextTick();
+  const [dlqEvent] = app.bus.list("task.dispatch.dlq");
+  const replayed = app.bus.replayDlq(dlqEvent.event_id);
+
+  assert.equal(replayed.stream, "task.dispatch.sre-support");
+  assert.equal(replayed.replayed_from, dlqEvent.event_id);
+});
+
 let failed = 0;
 for (const { name, fn } of tests) {
   try {

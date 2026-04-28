@@ -126,6 +126,15 @@ const server = createServer(async (req, res) => {
       return send(res, 200, buildMetrics(app));
     }
 
+    if (req.method === "GET" && url.pathname === "/dlq") {
+      return send(res, 200, { events: app.bus.list("task.dispatch.dlq") });
+    }
+
+    const dlqId = routeParam(url.pathname, "/dlq/");
+    if (req.method === "POST" && dlqId && url.pathname.endsWith("/replay")) {
+      return send(res, 202, app.bus.replayDlq(dlqId));
+    }
+
     return send(res, 404, { error: { code: "not_found", message: "Route not found" } });
   } catch (error) {
     const status = error.status || 500;

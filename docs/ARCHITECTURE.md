@@ -9,9 +9,9 @@
 - `src/memory`: Knowledge Graph local con entidades, relaciones, fuentes, confianza y busqueda temporal simple.
 - `src/security`: policy engine, permisos por rol, deteccion de prompt injection y redaccion basica.
 - `src/approvals`: workflow de aprobacion humana.
-- `src/core`: errores, costes, ids, auditoria y validacion.
+- `src/core`: errores, costes, budget guard, ids, auditoria y validacion.
 - `src/server.js`: API HTTP nativa.
-- `public/`: UI interna para consola de tareas, resultados, approvals y audit trail.
+- `public/`: UI interna para consola de tareas, resultados, approvals, knowledge, metrics, DLQ y audit trail.
 
 ## Streams implementados
 
@@ -37,8 +37,21 @@ Este MVP demuestra los contratos y flujos principales:
 7. Detectar prompt injection en datos no confiables.
 8. Generar output estructurado.
 9. Crear approval request para accion sensible.
-10. Registrar auditoria y coste.
-11. Operar el flujo desde una UI interna simple.
+10. Aplicar presupuesto de tool calls y coste.
+11. Registrar auditoria y coste.
+12. Operar el flujo desde una UI interna simple.
+
+## DLQ y reproceso
+
+Los fallos de permisos, presupuesto o worker se publican en `task.dispatch.dlq`.
+La API permite inspeccionar y reprocesar eventos:
+
+```http
+GET /dlq
+POST /dlq/{event_id}/replay
+```
+
+El reproceso vuelve a publicar el evento original en el stream donde fallo.
 
 ## Siguiente paso natural
 

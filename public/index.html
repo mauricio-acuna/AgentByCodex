@@ -20,6 +20,7 @@
         <button class="nav-item" data-view="approvals">Approvals</button>
         <button class="nav-item" data-view="knowledge">Knowledge</button>
         <button class="nav-item" data-view="metrics">Metrics</button>
+        <button class="nav-item" data-view="dlq">DLQ</button>
         <button class="nav-item" data-view="audit">Audit</button>
       </nav>
       <div class="status">
@@ -115,6 +116,16 @@
             <span id="metrics-cost" class="pill">$0</span>
           </div>
           <div id="metrics-grid" class="metrics-grid"></div>
+        </section>
+      </section>
+
+      <section id="view-dlq" class="view">
+        <section class="panel">
+          <div class="panel-head">
+            <h2>Dead Letter Queue</h2>
+            <span id="dlq-count" class="pill">0</span>
+          </div>
+          <div id="dlq-list" class="list"></div>
         </section>
       </section>
 

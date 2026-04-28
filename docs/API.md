@@ -112,6 +112,20 @@ GET /knowledge?q=billing-api%205xx%20runbook&type=Service&type=Runbook&limit=8&m
 GET /metrics
 ```
 
+## Dead Letter Queue
+
+Listar eventos fallidos:
+
+```http
+GET /dlq
+```
+
+Reprocesar un evento:
+
+```http
+POST /dlq/{event_id}/replay
+```
+
 ## Demo
 
 ```powershell

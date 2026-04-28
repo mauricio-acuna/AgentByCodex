@@ -12,11 +12,11 @@ Leyenda: `[x]` hecho, `[~]` parcial, `[ ]` pendiente.
 - [x] `packages/contracts` versionado (0.1.0). Pendiente: publicar a registry interno.
 - [~] Worker SDK con ejemplo end-to-end funcionando (codigo y tests escritos; falta `pytest` con red).
 - [ ] Policy engine acepta tareas y bloquea acciones L2+ sin approval.
-- [ ] Cost tracking emite metrica por task_id.
+- [x] Cost tracking emite metrica por task_id. Implementado y verificado en ruta Node.
 - [ ] Tests de contrato dispatcher <-> worker en verde en CI.
-- [ ] DLQ funcional con un caso de fallo (logica en SDK; falta verificacion E2E).
+- [x] DLQ funcional con un caso de fallo. Verificado en ruta Node con fallo de permisos, presupuesto y replay.
 
-Estado: **2/7 cumplidos, 3/7 parciales**. Aun no es momento de paralelizar.
+Estado: **4/7 cumplidos, 2/7 parciales**. Aun no es momento de paralelizar, pero ya hay suficientes bloques vivos para preparar contratos de Fase B.
 
 ## Hitos Fase A
 
@@ -137,13 +137,15 @@ Se avanzo con una implementacion ejecutable sin dependencias externas para no qu
 - [x] Policy engine L0-L4 parcial con permisos por rol, redaccion y deteccion de prompt injection.
 - [x] Approval workflow en `src/approvals/approvalStore.js`.
 - [x] Cost tracking basico por tarea en `src/core/costs.js`.
+- [x] Enforcement de presupuesto por `max_tool_calls` y `max_usd`.
 - [x] Endpoint y panel `/metrics` con totales, coste por task/team/worker/modelo.
 - [x] Tool registry mock read-only para Datadog, GitHub, CircleCI, Jira y Notion.
 - [x] Knowledge Graph local con entidades, relaciones, fuentes, confianza y busqueda.
 - [x] Workers SRE/CS enriquecen resultados con `memory_context`.
-- [x] DLQ funcional ante fallo de permisos o worker.
+- [x] DLQ funcional ante fallo de permisos, presupuesto o worker.
+- [x] API/UI para inspeccionar y reprocesar DLQ.
 - [x] API HTTP nativa en `src/server.js`.
-- [x] UI interna en `public/` para tasks, resultados, approvals, knowledge, metrics y audit trail.
+- [x] UI interna en `public/` para tasks, resultados, approvals, knowledge, metrics, DLQ y audit trail.
 - [x] Tests locales verdes con `npm.cmd test`.
 
 Comando validado:
@@ -155,7 +157,7 @@ npm.cmd test
 Resultado:
 
 ```text
-8 test(s) passed
+11 test(s) passed
 ```
 
 Nota: esta ruta Node no reemplaza necesariamente el monorepo Python planificado, pero fija comportamiento ejecutable y contratos practicos para portar luego a `packages/contracts`, `packages/worker_sdk`, `packages/dispatcher`, `packages/policy` y `packages/observability`.

@@ -22,7 +22,7 @@ export class SreWorker extends BaseWorker {
 
   async handleIncident(event) {
     const service = extractService(event.payload.prompt);
-    const context = { task_id: event.task_id, requested_by: event.requested_by };
+    const context = { task_id: event.task_id, requested_by: event.requested_by, budget: event.budget };
     const [signals, prs, runbooks, memory] = await Promise.all([
       this.tools.call("datadogGetServiceSignals", { service }, context),
       this.tools.call("githubGetRecentPrs", { service }, context),
@@ -91,7 +91,7 @@ export class SreWorker extends BaseWorker {
 
   async handlePipeline(event) {
     const repo = extractRepo(event.payload.prompt);
-    const context = { task_id: event.task_id, requested_by: event.requested_by };
+    const context = { task_id: event.task_id, requested_by: event.requested_by, budget: event.budget };
     const pipeline = await this.tools.call("circleciGetFailedPipeline", { repo }, context);
     return {
       summary: `CircleCI pipeline for ${repo} failed in job ${pipeline.failed_job || "unknown"}.`,

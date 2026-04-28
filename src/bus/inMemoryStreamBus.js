@@ -73,5 +73,24 @@ export class InMemoryStreamBus {
   list(stream) {
     return [...(this.streams.get(stream) || [])];
   }
-}
 
+  replayDlq(eventId) {
+    const dlqEvent = this.list(STREAMS.DLQ).find((event) => event.event_id === eventId);
+    if (!dlqEvent) {
+      throw new AppError("DLQ event not found", { code: "not_found", status: 404 });
+    }
+    if (!dlqEvent.failed_stream || !dlqEvent.original_event) {
+      throw new AppError("DLQ event cannot be replayed", { code: "invalid_state" });
+    }
+    this.audit?.record("bus.dlq_replay", {
+      task_id: dlqEvent.task_id,
+      dlq_event_id: eventId,
+      target_stream: dlqEvent.failed_stream
+    });
+    return this.publish(dlqEvent.failed_stream, {
+      ...dlqEvent.original_event,
+      event_id: uuid(),
+      replayed_from: eventId
+    });
+  }
+}

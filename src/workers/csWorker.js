@@ -9,7 +9,7 @@ export class CsWorker extends BaseWorker {
   async handle(event) {
     const prompt = event.payload.prompt;
     const account = extractAccount(prompt);
-    const context = { task_id: event.task_id, requested_by: event.requested_by };
+    const context = { task_id: event.task_id, requested_by: event.requested_by, budget: event.budget };
     const [tickets, docs, memory] = await Promise.all([
       this.tools.call("jiraGetAccountTickets", { account }, context),
       this.tools.call("notionSearchDocs", { query: prompt }, context),

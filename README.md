@@ -13,9 +13,10 @@ Incluye:
 - Deteccion basica de prompt injection en contenido no confiable.
 - Approval workflow.
 - Auditoria.
-- Estimacion de coste por tarea.
+- Estimacion de coste por tarea y enforcement de presupuesto.
+- DLQ con inspeccion y replay desde API/UI.
 - API HTTP sin dependencias externas.
-- UI interna web para tareas, resultados, approvals y auditoria.
+- UI interna web para tareas, resultados, approvals, knowledge, metrics, DLQ y auditoria.
 - Knowledge Graph local con fuentes, confianza, relaciones y busqueda.
 - Tests en proceso unico para evitar restricciones de spawn del entorno.
 

@@ -1,5 +1,6 @@
 import { ApprovalStore } from "./approvals/approvalStore.js";
 import { AuditLog } from "./core/audit.js";
+import { BudgetGuard } from "./core/budgetGuard.js";
 import { InMemoryStreamBus } from "./bus/inMemoryStreamBus.js";
 import { Dispatcher } from "./dispatcher/dispatcher.js";
 import { KnowledgeGraph } from "./memory/knowledgeGraph.js";
@@ -14,9 +15,10 @@ export function createApp() {
   const bus = new InMemoryStreamBus({ audit });
   const approvals = new ApprovalStore({ audit });
   const policy = new PolicyEngine({ audit });
+  const budgetGuard = new BudgetGuard({ audit });
   const knowledgeGraph = new KnowledgeGraph({ audit });
-  const tools = new ToolRegistry({ policy, audit, knowledgeGraph });
-  const dispatcher = new Dispatcher({ bus, audit });
+  const tools = new ToolRegistry({ policy, audit, knowledgeGraph, budgetGuard });
+  const dispatcher = new Dispatcher({ bus, audit, budgetGuard });
   dispatcher.attachResultListener();
 
   const sreWorker = new SreWorker({ name: "sre-worker", bus, tools, approvals, audit });
@@ -28,6 +30,7 @@ export function createApp() {
     audit,
     bus,
     approvals,
+    budgetGuard,
     knowledgeGraph,
     policy,
     tools,

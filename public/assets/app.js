@@ -4,6 +4,7 @@ const state = {
   approvals: [],
   knowledge: [],
   metrics: null,
+  dlq: [],
   audit: []
 };
 
@@ -209,6 +210,31 @@ function renderMetrics() {
     .join("");
 }
 
+function renderDlq() {
+  $("#dlq-count").textContent = String(state.dlq.length);
+  $("#dlq-list").innerHTML = state.dlq
+    .map((event) => `
+      <article class="item">
+        <strong>${escapeHtml(event.reason || "Unknown failure")}</strong>
+        <p>${escapeHtml(event.failed_stream || "unknown stream")} · ${escapeHtml(event.failed_consumer || "unknown consumer")}</p>
+        <div class="meta">
+          <span class="pill failed">failed</span>
+          <span class="pill muted">${escapeHtml(event.task_id || "no-task")}</span>
+          <button class="decision" data-dlq-id="${event.event_id}">Replay</button>
+        </div>
+        <pre>${escapeHtml(JSON.stringify(event.original_event || {}, null, 2))}</pre>
+      </article>
+    `)
+    .join("");
+
+  $$("#dlq-list .decision").forEach((button) => {
+    button.addEventListener("click", async () => {
+      await api(`/dlq/${button.dataset.dlqId}/replay`, { method: "POST" });
+      await refresh();
+    });
+  });
+}
+
 function renderAudit() {
   $("#audit-count").textContent = String(state.audit.length);
   $("#audit-list").innerHTML = state.audit
@@ -228,17 +254,19 @@ function renderAudit() {
 
 async function refresh() {
   const query = encodeURIComponent($("#knowledge-query")?.value || "billing-api");
-  const [tasks, approvals, knowledge, metrics, audit] = await Promise.all([
+  const [tasks, approvals, knowledge, metrics, dlq, audit] = await Promise.all([
     api("/tasks"),
     api("/approvals"),
     api(`/knowledge?q=${query}&limit=8&min_confidence=0.6`),
     api("/metrics"),
+    api("/dlq"),
     api("/audit")
   ]);
   state.tasks = tasks.tasks;
   state.approvals = approvals.approvals;
   state.knowledge = knowledge.results || [];
   state.metrics = metrics;
+  state.dlq = dlq.events || [];
   state.audit = audit.events;
   if (!state.selectedTaskId && state.tasks[0]) state.selectedTaskId = state.tasks[0].task_id;
   renderTasks();
@@ -246,6 +274,7 @@ async function refresh() {
   renderApprovals();
   renderKnowledge();
   renderMetrics();
+  renderDlq();
   renderAudit();
 }
 
