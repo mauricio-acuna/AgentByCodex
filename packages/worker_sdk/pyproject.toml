@@ -1,0 +1,12 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "worker_sdk"
+version = "0.1.0"
+description = "SDK for workers in the platform"
+requires-python = ">=3.8"
+
+[project.optional-dependencies]
+dev = ["pytest", "ruff"]

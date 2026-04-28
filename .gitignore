@@ -1,0 +1,15 @@
+.venv/
+node_modules/
+npm-debug.log*
+
+.DS_Store
+Thumbs.db
+
+*.log
+*.tmp
+*.bak
+
+coverage/
+dist/
+build/
+

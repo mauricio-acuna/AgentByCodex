@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Agentic Operations Platform</title>
+    <link rel="stylesheet" href="/assets/styles.css" />
+  </head>
+  <body>
+    <aside class="sidebar">
+      <div class="brand">
+        <span class="mark">AO</span>
+        <div>
+          <strong>Agentic Ops</strong>
+          <small>Internal platform</small>
+        </div>
+      </div>
+      <nav>
+        <button class="nav-item active" data-view="tasks">Tasks</button>
+        <button class="nav-item" data-view="approvals">Approvals</button>
+        <button class="nav-item" data-view="knowledge">Knowledge</button>
+        <button class="nav-item" data-view="metrics">Metrics</button>
+        <button class="nav-item" data-view="audit">Audit</button>
+      </nav>
+      <div class="status">
+        <span id="health-dot" class="dot"></span>
+        <span id="health-text">Checking</span>
+      </div>
+    </aside>
+
+    <main>
+      <section class="toolbar">
+        <div>
+          <h1>Operations Console</h1>
+          <p>Dispatcher, workers, approvals and audit trail.</p>
+        </div>
+        <button id="refresh" class="icon-button" title="Refresh">Refresh</button>
+      </section>
+
+      <section id="view-tasks" class="view active">
+        <form id="task-form" class="panel task-form">
+          <div class="field wide">
+            <label for="prompt">Task</label>
+            <textarea id="prompt" required>Investiga por que subieron los errores 5xx del servicio billing-api</textarea>
+          </div>
+          <div class="field">
+            <label for="domain">Domain</label>
+            <select id="domain">
+              <option value="sre">SRE</option>
+              <option value="customer_success">Customer Success</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="role">Role</label>
+            <select id="role">
+              <option value="sre">sre</option>
+              <option value="cs">cs</option>
+              <option value="requester">requester</option>
+              <option value="admin">admin</option>
+            </select>
+          </div>
+          <button type="submit">Dispatch</button>
+        </form>
+
+        <div class="split">
+          <section class="panel">
+            <div class="panel-head">
+              <h2>Tasks</h2>
+              <span id="task-count" class="pill">0</span>
+            </div>
+            <div id="tasks-list" class="list"></div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-head">
+              <h2>Result</h2>
+              <span id="selected-task-status" class="pill muted">none</span>
+            </div>
+            <div id="result-view" class="result-empty">Select a task.</div>
+          </section>
+        </div>
+      </section>
+
+      <section id="view-approvals" class="view">
+        <section class="panel">
+          <div class="panel-head">
+            <h2>Approval Inbox</h2>
+            <span id="approval-count" class="pill">0</span>
+          </div>
+          <div id="approvals-list" class="list"></div>
+        </section>
+      </section>
+
+      <section id="view-knowledge" class="view">
+        <section class="panel">
+          <div class="panel-head">
+            <h2>Knowledge Graph</h2>
+            <span id="knowledge-count" class="pill">0</span>
+          </div>
+          <form id="knowledge-form" class="knowledge-form">
+            <div class="field">
+              <label for="knowledge-query">Search</label>
+              <input id="knowledge-query" value="billing-api 5xx runbook owner" />
+            </div>
+            <button type="submit">Search</button>
+          </form>
+          <div id="knowledge-list" class="list"></div>
+        </section>
+      </section>
+
+      <section id="view-metrics" class="view">
+        <section class="panel">
+          <div class="panel-head">
+            <h2>Metrics</h2>
+            <span id="metrics-cost" class="pill">$0</span>
+          </div>
+          <div id="metrics-grid" class="metrics-grid"></div>
+        </section>
+      </section>
+
+      <section id="view-audit" class="view">
+        <section class="panel">
+          <div class="panel-head">
+            <h2>Audit Trail</h2>
+            <span id="audit-count" class="pill">0</span>
+          </div>
+          <div id="audit-list" class="audit-list"></div>
+        </section>
+      </section>
+    </main>
+
+    <script src="/assets/app.js" type="module"></script>
+  </body>
+</html>

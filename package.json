@@ -1,0 +1,15 @@
+{
+  "name": "agentic-operations-platform",
+  "version": "0.1.0",
+  "description": "MVP local de plataforma interna de agentes operativos basada en los PRDs de claude/",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "start": "node src/server.js",
+    "demo": "node src/demo.js",
+    "test": "node test/run.js"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
