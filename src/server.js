@@ -105,6 +105,15 @@ const server = createServer(async (req, res) => {
       return send(res, 200, app.approvals.decide(approvalId, body));
     }
 
+    if (req.method === "POST" && approvalId && url.pathname.endsWith("/execute")) {
+      const body = await readJson(req);
+      return send(res, 202, app.actions.executeApproval(approvalId, body.actor || { id: "api-user", roles: ["admin"] }));
+    }
+
+    if (req.method === "GET" && url.pathname === "/actions") {
+      return send(res, 200, { executions: app.actions.list({ taskId: url.searchParams.get("task_id") || undefined }) });
+    }
+
     if (req.method === "GET" && url.pathname === "/audit") {
       return send(res, 200, { events: app.audit.list() });
     }

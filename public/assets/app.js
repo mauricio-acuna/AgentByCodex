@@ -139,6 +139,10 @@ function renderApprovals() {
                 <button class="decision" data-approval-id="${approval.approval_id}" data-decision="approved">Approve</button>
                 <button class="decision reject" data-approval-id="${approval.approval_id}" data-decision="rejected">Reject</button>
               </div>`
+            : approval.status === "approved"
+              ? `<div class="meta">
+                  <button class="execute-action" data-approval-id="${approval.approval_id}">Execute</button>
+                </div>`
             : ""
         }
       </article>
@@ -153,6 +157,18 @@ function renderApprovals() {
           decision: button.dataset.decision,
           decidedBy: { id: "ui-user", roles: ["admin"] },
           comment: `Decision from UI: ${button.dataset.decision}`
+        })
+      });
+      await refresh();
+    });
+  });
+
+  $$(".execute-action").forEach((button) => {
+    button.addEventListener("click", async () => {
+      await api(`/approvals/${button.dataset.approvalId}/execute`, {
+        method: "POST",
+        body: JSON.stringify({
+          actor: { id: "ui-user", roles: ["admin"] }
         })
       });
       await refresh();

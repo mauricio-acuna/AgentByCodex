@@ -85,6 +85,31 @@ content-type: application/json
 }
 ```
 
+## Ejecutar approval aprobado
+
+```http
+POST /approvals/{approval_id}/execute
+content-type: application/json
+```
+
+```json
+{
+  "actor": {
+    "id": "oncall",
+    "roles": ["admin"]
+  }
+}
+```
+
+El MVP ejecuta acciones mutativas en modo simulado y auditable. Acciones L2/L3 requieren approval aprobado. Acciones L4 quedan bloqueadas.
+
+## Listar ejecuciones
+
+```http
+GET /actions
+GET /actions?task_id={task_id}
+```
+
 ## Auditoria
 
 ```http

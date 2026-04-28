@@ -9,6 +9,7 @@
 - `src/memory`: Knowledge Graph local con entidades, relaciones, fuentes, confianza y busqueda temporal simple.
 - `src/security`: policy engine, permisos por rol, deteccion de prompt injection y redaccion basica.
 - `src/approvals`: workflow de aprobacion humana.
+- `src/actions`: ejecucion controlada y auditable de acciones aprobadas.
 - `src/core`: errores, costes, budget guard, ids, auditoria y validacion.
 - `src/server.js`: API HTTP nativa.
 - `public/`: UI interna para consola de tareas, resultados, approvals, knowledge, metrics, DLQ y audit trail.
@@ -37,9 +38,10 @@ Este MVP demuestra los contratos y flujos principales:
 7. Detectar prompt injection en datos no confiables.
 8. Generar output estructurado.
 9. Crear approval request para accion sensible.
-10. Aplicar presupuesto de tool calls y coste.
-11. Registrar auditoria y coste.
-12. Operar el flujo desde una UI interna simple.
+10. Ejecutar acciones L2/L3 solo con approval aprobado.
+11. Aplicar presupuesto de tool calls y coste.
+12. Registrar auditoria y coste.
+13. Operar el flujo desde una UI interna simple.
 
 ## DLQ y reproceso
 

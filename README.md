@@ -12,6 +12,7 @@ Incluye:
 - Policy engine con roles y niveles L0-L4.
 - Deteccion basica de prompt injection en contenido no confiable.
 - Approval workflow.
+- Ejecucion controlada de acciones aprobadas L2/L3; L4 bloqueado.
 - Auditoria.
 - Estimacion de coste por tarea y enforcement de presupuesto.
 - DLQ con inspeccion y replay desde API/UI.

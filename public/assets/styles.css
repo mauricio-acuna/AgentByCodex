@@ -138,7 +138,8 @@ h2 {
 
 .icon-button,
 form button[type="submit"],
-.decision {
+.decision,
+.execute-action {
   background: var(--accent);
   color: white;
   min-height: 38px;

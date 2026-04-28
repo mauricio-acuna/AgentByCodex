@@ -11,12 +11,12 @@ Leyenda: `[x]` hecho, `[~]` parcial, `[ ]` pendiente.
 - [~] Schemas de evento estables (definidos en `aop_contracts`, en burn-in 3 dias).
 - [x] `packages/contracts` versionado (0.1.0). Pendiente: publicar a registry interno.
 - [~] Worker SDK con ejemplo end-to-end funcionando (codigo y tests escritos; falta `pytest` con red).
-- [ ] Policy engine acepta tareas y bloquea acciones L2+ sin approval.
+- [x] Policy engine acepta tareas y bloquea acciones L2+ sin approval. Implementado en ruta Node con `ActionExecutor`.
 - [x] Cost tracking emite metrica por task_id. Implementado y verificado en ruta Node.
 - [ ] Tests de contrato dispatcher <-> worker en verde en CI.
 - [x] DLQ funcional con un caso de fallo. Verificado en ruta Node con fallo de permisos, presupuesto y replay.
 
-Estado: **4/7 cumplidos, 2/7 parciales**. Aun no es momento de paralelizar, pero ya hay suficientes bloques vivos para preparar contratos de Fase B.
+Estado: **5/7 cumplidos, 2/7 parciales**. Ya conviene planificar Fase B y abrir tracks paralelos con contratos de la ruta Node como referencia.
 
 ## Hitos Fase A
 
@@ -136,6 +136,7 @@ Se avanzo con una implementacion ejecutable sin dependencias externas para no qu
 - [x] Workers SRE y CS en `src/workers/`.
 - [x] Policy engine L0-L4 parcial con permisos por rol, redaccion y deteccion de prompt injection.
 - [x] Approval workflow en `src/approvals/approvalStore.js`.
+- [x] Action executor con bloqueo L2/L3 sin approval aprobado y L4 fuera del MVP.
 - [x] Cost tracking basico por tarea en `src/core/costs.js`.
 - [x] Enforcement de presupuesto por `max_tool_calls` y `max_usd`.
 - [x] Endpoint y panel `/metrics` con totales, coste por task/team/worker/modelo.
@@ -157,8 +158,10 @@ npm.cmd test
 Resultado:
 
 ```text
-11 test(s) passed
+15 test(s) passed
 ```
+
+Aviso: se alcanzaron 5 items del gate. Es momento de planificar Fase B si queremos paralelizar tracks, manteniendo el carril Node como comportamiento ejecutable de referencia.
 
 Nota: esta ruta Node no reemplaza necesariamente el monorepo Python planificado, pero fija comportamiento ejecutable y contratos practicos para portar luego a `packages/contracts`, `packages/worker_sdk`, `packages/dispatcher`, `packages/policy` y `packages/observability`.
 

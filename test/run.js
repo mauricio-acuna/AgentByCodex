@@ -205,6 +205,75 @@ test("DLQ events can be replayed onto their original stream", async () => {
   assert.equal(replayed.replayed_from, dlqEvent.event_id);
 });
 
+test("L2 actions require approved approval before execution", async () => {
+  const app = createApp();
+
+  assert.throws(
+    () => app.actions.executeAction({
+      actionType: "github.create_internal_issue_draft",
+      proposedAction: { title: "unsafe direct action" },
+      actor: { id: "admin", roles: ["admin"] },
+      taskId: "task-1"
+    }),
+    /approved approval_id/
+  );
+});
+
+test("pending approvals cannot be executed", async () => {
+  const app = createApp();
+  const approval = app.approvals.create({
+    taskId: "task-1",
+    requestedBy: "sre-worker",
+    actionType: "github.create_internal_issue_draft",
+    riskLevel: "medium",
+    proposedAction: { title: "Investigate" },
+    reasoningSummary: "Needs human review"
+  });
+
+  assert.throws(
+    () => app.actions.executeApproval(approval.approval_id, { id: "admin", roles: ["admin"] }),
+    /not approved/
+  );
+});
+
+test("approved L2 actions execute in controlled mode and are audited", async () => {
+  const app = createApp();
+  const approval = app.approvals.create({
+    taskId: "task-1",
+    requestedBy: "sre-worker",
+    actionType: "github.create_internal_issue_draft",
+    riskLevel: "medium",
+    proposedAction: { title: "Investigate" },
+    reasoningSummary: "Needs human review"
+  });
+  app.approvals.decide(approval.approval_id, {
+    decision: "approved",
+    decidedBy: { id: "oncall", roles: ["admin"] }
+  });
+
+  const execution = app.actions.executeApproval(approval.approval_id, { id: "admin", roles: ["admin"] });
+
+  assert.equal(execution.status, "executed");
+  assert.equal(execution.action_level, "L2");
+  assert.equal(execution.result.mode, "simulated");
+  assert.ok(app.audit.list({ taskId: "task-1" }).some((event) => event.type === "action.executed"));
+});
+
+test("L4 actions are blocked outside the MVP", async () => {
+  const app = createApp();
+
+  assert.throws(
+    () => app.actions.executeAction({
+      actionType: "aws.rollback_service",
+      proposedAction: { service: "billing-api" },
+      actor: { id: "admin", roles: ["admin"] },
+      taskId: "task-1",
+      approvalId: "approval-1"
+    }),
+    /outside the MVP/
+  );
+});
+
 let failed = 0;
 for (const { name, fn } of tests) {
   try {

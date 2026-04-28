@@ -45,6 +45,12 @@ export class ApprovalStore {
     return approval;
   }
 
+  get(approvalId) {
+    const approval = this.approvals.get(approvalId);
+    if (!approval) throw new AppError("Approval not found", { code: "not_found", status: 404 });
+    return approval;
+  }
+
   list({ taskId, status } = {}) {
     return [...this.approvals.values()].filter((approval) => {
       if (taskId && approval.task_id !== taskId) return false;
@@ -53,4 +59,3 @@ export class ApprovalStore {
     });
   }
 }
-

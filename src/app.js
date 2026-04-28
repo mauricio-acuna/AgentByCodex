@@ -1,4 +1,5 @@
 import { ApprovalStore } from "./approvals/approvalStore.js";
+import { ActionExecutor } from "./actions/actionExecutor.js";
 import { AuditLog } from "./core/audit.js";
 import { BudgetGuard } from "./core/budgetGuard.js";
 import { InMemoryStreamBus } from "./bus/inMemoryStreamBus.js";
@@ -15,6 +16,7 @@ export function createApp() {
   const bus = new InMemoryStreamBus({ audit });
   const approvals = new ApprovalStore({ audit });
   const policy = new PolicyEngine({ audit });
+  const actions = new ActionExecutor({ approvals, policy, audit });
   const budgetGuard = new BudgetGuard({ audit });
   const knowledgeGraph = new KnowledgeGraph({ audit });
   const tools = new ToolRegistry({ policy, audit, knowledgeGraph, budgetGuard });
@@ -30,6 +32,7 @@ export function createApp() {
     audit,
     bus,
     approvals,
+    actions,
     budgetGuard,
     knowledgeGraph,
     policy,
