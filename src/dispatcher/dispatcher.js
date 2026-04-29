@@ -113,6 +113,14 @@ export class Dispatcher {
     this.bus.subscribe(STREAMS.RESULT, "dispatcher-result-listener", async (event) => {
       const task = this.tasks.get(event.task_id);
       if (!task) return;
+      if (task.status === "cancelled") {
+        this.audit?.record("dispatcher.result_ignored", {
+          task_id: event.task_id,
+          reason: "task_cancelled",
+          worker: event.worker
+        });
+        return;
+      }
       try {
         this.budgetGuard?.recordCost({
           taskId: event.task_id,

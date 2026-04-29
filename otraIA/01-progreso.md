@@ -87,11 +87,11 @@ Modulos en `packages/worker_sdk/src/aop_worker_sdk/`:
 - [ ] Logs estructurados (JSON) con `task_id`, `trace_id`, `worker`.
 - [ ] Alerta cuando se excede `Budget.max_usd`.
 
-### Hito 6 - Tests de contrato dispatcher <-> worker (PENDIENTE)
+### Hito 6 - Tests de contrato dispatcher <-> worker (COMPLETADO EN RUTA NODE)
 - [x] Suite que arranca dispatcher + worker dummy con `InMemoryEventBus`.
 - [x] Round-trip: input -> DispatchEvent -> handle -> ResultEvent -> respuesta.
-- [ ] DLQ end-to-end con worker que lanza error.
-- [ ] Cancelacion end-to-end.
+- [x] DLQ end-to-end con worker que lanza error.
+- [x] Cancelacion end-to-end.
 
 ### Hito 7 - DLQ funcional (PARCIAL)
 - [x] Logica de DLQ implementada en `Worker` y `InMemoryEventBus`.
@@ -150,6 +150,7 @@ Se avanzo con una implementacion ejecutable sin dependencias externas para no qu
 - [x] API HTTP nativa en `src/server.js`.
 - [x] Persistencia local JSON para tasks, audit, approvals, actions, KG, budgets y streams.
 - [x] Test de contrato dispatcher -> worker dummy -> task.result -> completed.
+- [x] Tests de contrato negativos: worker failure -> DLQ y cancelacion -> no result tardio.
 - [x] UI interna en `public/` para tasks, resultados, approvals, knowledge, metrics, DLQ y audit trail.
 - [x] Tests locales verdes con `npm.cmd test`.
 
@@ -162,7 +163,7 @@ npm.cmd test
 Resultado:
 
 ```text
-19 test(s) passed
+21 test(s) passed
 ```
 
 Aviso: se alcanzaron 5 items del gate. Es momento de planificar Fase B si queremos paralelizar tracks, manteniendo el carril Node como comportamiento ejecutable de referencia.

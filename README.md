@@ -22,7 +22,7 @@ Incluye:
 - UI interna web para tareas, resultados, approvals, knowledge, metrics, DLQ y auditoria.
 - Knowledge Graph local con fuentes, confianza, relaciones y busqueda.
 - Persistencia local JSON para snapshots de estado.
-- Test de contrato dispatcher-worker incluido en la suite.
+- Tests de contrato dispatcher-worker incluidos en la suite, incluyendo DLQ y cancelacion.
 - Tests en proceso unico para evitar restricciones de spawn del entorno.
 
 ## Requisitos

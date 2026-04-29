@@ -29,6 +29,23 @@ class ContractWorker extends BaseWorker {
   }
 }
 
+class FailingContractWorker extends BaseWorker {
+  async handle() {
+    throw new Error("contract worker exploded");
+  }
+}
+
+class SlowContractWorker extends BaseWorker {
+  async handle(event) {
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    return {
+      summary: `slow-ok:${event.task_id}`,
+      sources: [],
+      cost: this.costFor(event.payload.prompt)
+    };
+  }
+}
+
 test("routes SRE incident tasks to the SRE worker and returns grounded output", async () => {
   const app = createApp();
   const task = app.dispatcher.createTask({
@@ -76,6 +93,64 @@ test("contract dispatcher worker roundtrip completes through task.result", async
   assert.equal(completed.result.summary, `contract-ok:${task.task_id}`);
   assert.equal(bus.list(STREAMS.RESULT).length, 1);
   assert.ok(audit.list({ taskId: task.task_id }).some((event) => event.type === "dispatcher.complete"));
+});
+
+test("contract worker failure routes task to DLQ and marks failed", async () => {
+  const audit = new AuditLog();
+  const bus = new InMemoryStreamBus({ audit });
+  const budgetGuard = new BudgetGuard({ audit });
+  const dispatcher = new Dispatcher({ bus, audit, budgetGuard });
+  dispatcher.attachResultListener();
+  const worker = new FailingContractWorker({
+    name: "failing-contract-worker",
+    bus,
+    tools: null,
+    approvals: null,
+    audit
+  });
+  worker.attach(STREAMS.SRE);
+
+  const task = dispatcher.createTask({
+    prompt: "Investigate SRE contract failure",
+    requested_by: { id: "contract-user", team: "sre", roles: ["sre"] },
+    domain_hint: "sre"
+  });
+  await nextTick();
+
+  const failed = dispatcher.getTask(task.task_id);
+  const [dlq] = bus.list(STREAMS.DLQ);
+  assert.equal(failed.status, "failed");
+  assert.match(failed.error.reason, /exploded/);
+  assert.equal(dlq.failed_consumer, "failing-contract-worker");
+});
+
+test("contract cancellation prevents late worker result from completing task", async () => {
+  const audit = new AuditLog();
+  const bus = new InMemoryStreamBus({ audit });
+  const budgetGuard = new BudgetGuard({ audit });
+  const dispatcher = new Dispatcher({ bus, audit, budgetGuard });
+  dispatcher.attachResultListener();
+  const worker = new SlowContractWorker({
+    name: "slow-contract-worker",
+    bus,
+    tools: null,
+    approvals: null,
+    audit
+  });
+  worker.attach(STREAMS.SRE);
+
+  const task = dispatcher.createTask({
+    prompt: "Investigate SRE cancellable contract",
+    requested_by: { id: "contract-user", team: "sre", roles: ["sre"] },
+    domain_hint: "sre"
+  });
+  dispatcher.cancelTask(task.task_id, "contract cancellation test");
+  await new Promise((resolve) => setTimeout(resolve, 35));
+
+  const cancelled = dispatcher.getTask(task.task_id);
+  assert.equal(cancelled.status, "cancelled");
+  assert.equal(bus.list(STREAMS.RESULT).length, 0);
+  assert.ok(audit.list({ taskId: task.task_id }).some((event) => event.type === "worker.cancelled"));
 });
 
 test("routes customer success tasks and keeps external message as a draft", async () => {

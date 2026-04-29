@@ -79,6 +79,13 @@ La suite incluye un worker dummy que valida el contrato minimo:
 Dispatcher -> task.dispatch.sre-support -> Worker -> task.result -> completed
 ```
 
+Tambien valida contratos negativos:
+
+```text
+Worker error -> task.dispatch.dlq -> task failed
+signal.cancel -> worker result ignored -> task cancelled
+```
+
 ## Siguiente paso natural
 
 Sustituir `InMemoryStreamBus` por un adaptador Redis real manteniendo la misma interfaz:

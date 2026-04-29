@@ -15,6 +15,10 @@ export class BaseWorker {
       if (this.bus.isCancelled(event.task_id)) return;
       this.audit?.record("worker.start", { task_id: event.task_id, worker: this.name });
       const result = await this.handle(event);
+      if (this.bus.isCancelled(event.task_id)) {
+        this.audit?.record("worker.cancelled", { task_id: event.task_id, worker: this.name });
+        return;
+      }
       this.bus.publish(STREAMS.RESULT, {
         task_id: event.task_id,
         worker: this.name,
@@ -36,4 +40,3 @@ export class BaseWorker {
     };
   }
 }
-
