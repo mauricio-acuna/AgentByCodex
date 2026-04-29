@@ -56,3 +56,8 @@ Dar por cerrado el MVP verificable y abrir Fase B solo si se quiere convertirlo 
 4. OpenTelemetry/Datadog real.
 5. Port formal de contratos a package interno.
 
+## Material comercial
+
+El material de venta y promocion esta en:
+
+[MATERIAL_COMERCIAL.md](MATERIAL_COMERCIAL.md)

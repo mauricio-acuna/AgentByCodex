@@ -99,4 +99,6 @@ Invoke-RestMethod -Method Post -Uri http://localhost:8080/tasks -ContentType 'ap
 
 - [API](docs/API.md)
 - [Arquitectura](docs/ARCHITECTURE.md)
+- [Material comercial](docs/MATERIAL_COMERCIAL.md)
+- [Cierre tecnico](docs/CLOSURE.md)
 - [PRDs Claude](claude/README.md)
