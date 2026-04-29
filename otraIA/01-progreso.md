@@ -59,33 +59,33 @@ Modulos en `packages/worker_sdk/src/aop_worker_sdk/`:
 - `hooks.py` - PolicyHook, CostHook + Noop stubs.
 - `worker.py` - Clase base Worker (~270 lineas).
 
-### Hito 3 - Dispatcher minimo (EN CURSO - SIGUIENTE)
-- [ ] `packages/dispatcher` con clase `Dispatcher`.
-- [ ] Aceptar input crudo -> crear `Task`, asignar `task_id` y `trace_id`.
-- [ ] Clasificador: dominio, task_type, risk, worker destino (regla simple primero, LLM despues).
-- [ ] Aplicar `Budget` por tarea segun politica de equipo.
-- [ ] Publicar `DispatchEvent` en stream del worker correcto.
-- [ ] Escuchar `task.result` y normalizar respuesta final.
-- [ ] Estado consultable de cada tarea (in-memory store -> luego BD).
-- [ ] API REST (FastAPI) en `apps/dispatcher-api/` (mas tarde).
-- [ ] Tests: routing por dominio, cancelacion, presupuesto excedido.
+### Hito 3 - Dispatcher minimo (COMPLETADO EN RUTA NODE)
+- [x] `src/dispatcher` con clase `Dispatcher`.
+- [x] Aceptar input crudo -> crear tarea, asignar `task_id` y `trace_id`.
+- [x] Clasificador: dominio, task_type, risk, worker destino por reglas.
+- [x] Aplicar `Budget` por tarea segun politica y metadata.
+- [x] Publicar evento en stream del worker correcto.
+- [x] Escuchar `task.result` y normalizar respuesta final.
+- [x] Estado consultable de cada tarea con store in-memory y snapshot JSON.
+- [x] API HTTP nativa en `src/server.js`.
+- [x] Tests: routing por dominio, cancelacion, presupuesto excedido.
 
-### Hito 4 - Policy engine L0-L4 (PENDIENTE)
-- [ ] `packages/policy` con `RuleBasedPolicy` que implementa `PolicyHook`.
-- [ ] Mapeo herramienta -> ActionLevel (catalogo).
-- [ ] Validacion de permisos de usuario (stub que luego conecta con IDP).
-- [ ] Generacion de `ApprovalRequest` para L2+.
-- [ ] Detector de prompt injection basico (heuristicas + marcado).
-- [ ] Redaccion de PII / secrets en outputs.
-- [ ] Tests: bloquear L2 sin approval, permitir L0 read-only, registrar redacciones.
+### Hito 4 - Policy engine L0-L4 (COMPLETADO EN RUTA NODE)
+- [x] `src/security` con `PolicyEngine` por reglas.
+- [x] Mapeo herramienta/accion -> ActionLevel.
+- [x] Validacion de permisos de usuario por rol.
+- [x] Generacion de `ApprovalRequest` para L2+.
+- [x] Detector de prompt injection basico (heuristicas + marcado).
+- [x] Redaccion de PII / secrets en outputs.
+- [x] Tests: bloquear L2 sin approval, permitir L0/L1 segun rol, registrar redacciones.
 
-### Hito 5 - Cost tracking + tracing (PENDIENTE)
-- [ ] `packages/observability` con `CostTracker` (implementa `CostHook`).
-- [ ] Calculo de coste por modelo (tabla de precios Sonnet/Opus configurable).
-- [ ] Acumulado por task / team / dia.
+### Hito 5 - Cost tracking + tracing (COMPLETADO PARCIAL EN RUTA NODE)
+- [x] `src/core/budgetGuard.js` con enforcement de presupuesto.
+- [x] Calculo de coste por modelo con tabla Sonnet/Opus.
+- [x] Acumulado por task / team / worker / modelo en `/metrics`.
 - [ ] OpenTelemetry: tracer con span por task, sub-spans por tool call.
-- [ ] Logs estructurados (JSON) con `task_id`, `trace_id`, `worker`.
-- [ ] Alerta cuando se excede `Budget.max_usd`.
+- [x] Auditoria estructurada con `task_id`, `trace_id`, `worker` en eventos.
+- [x] Corte y DLQ cuando se excede `Budget.max_usd`.
 
 ### Hito 6 - Tests de contrato dispatcher <-> worker (COMPLETADO EN RUTA NODE)
 - [x] Suite que arranca dispatcher + worker dummy con `InMemoryEventBus`.
@@ -93,10 +93,10 @@ Modulos en `packages/worker_sdk/src/aop_worker_sdk/`:
 - [x] DLQ end-to-end con worker que lanza error.
 - [x] Cancelacion end-to-end.
 
-### Hito 7 - DLQ funcional (PARCIAL)
+### Hito 7 - DLQ funcional (COMPLETADO EN RUTA NODE)
 - [x] Logica de DLQ implementada en `Worker` y `InMemoryEventBus`.
-- [ ] Validar caso end-to-end con un worker que falla siempre.
-- [ ] Documentar como inspeccionar DLQ y reprocesar.
+- [x] Validar caso end-to-end con un worker que falla siempre.
+- [x] Documentar como inspeccionar DLQ y reprocesar.
 
 ## Estrategia Actualizada
 
@@ -106,14 +106,14 @@ Adoptamos una estrategia híbrida por fases:
 
 ### Progreso Fase A
 
-- [ ] Definir y congelar contratos principales.
-- [ ] Implementar Dispatcher mínimo.
-- [ ] Crear SDK para Workers con manejo de errores y DLQ.
-- [ ] Configurar herramientas de tracking de costos y observabilidad.
+- [x] Definir contratos practicos en ruta Node.
+- [x] Implementar Dispatcher minimo.
+- [x] Crear base de Workers con manejo de errores, cancelacion y DLQ.
+- [x] Configurar tracking de costos, budget guard, metricas y auditoria.
 
 ### Bloqueadores
-- Falta de red para instalar dependencias y ejecutar tests.
-- Necesidad de estabilizar contratos antes de paralelizar.
+- Falta de red/Python ejecutable para instalar dependencias y ejecutar tests del carril Python.
+- Si se quiere produccion real: falta sustituir mocks por conectores reales y Redis real.
 
 ## Bloqueadores actuales
 
