@@ -74,6 +74,18 @@ export class InMemoryStreamBus {
     return [...(this.streams.get(stream) || [])];
   }
 
+  snapshot() {
+    return {
+      streams: Object.fromEntries(this.streams.entries()),
+      cancelledTasks: [...this.cancelledTasks]
+    };
+  }
+
+  load(snapshot = {}) {
+    this.streams = new Map(Object.entries(snapshot.streams || {}));
+    this.cancelledTasks = new Set(snapshot.cancelledTasks || []);
+  }
+
   replayDlq(eventId) {
     const dlqEvent = this.list(STREAMS.DLQ).find((event) => event.event_id === eventId);
     if (!dlqEvent) {

@@ -19,5 +19,12 @@ export class AuditLog {
     if (!taskId) return [...this.events];
     return this.events.filter((event) => event.task_id === taskId);
   }
-}
 
+  snapshot() {
+    return [...this.events];
+  }
+
+  load(events = []) {
+    this.events = Array.isArray(events) ? [...events] : [];
+  }
+}

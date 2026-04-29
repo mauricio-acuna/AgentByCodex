@@ -58,4 +58,15 @@ export class ApprovalStore {
       return true;
     });
   }
+
+  snapshot() {
+    return this.list();
+  }
+
+  load(approvals = []) {
+    this.approvals = new Map();
+    for (const approval of approvals) {
+      this.approvals.set(approval.approval_id, approval);
+    }
+  }
 }

@@ -12,6 +12,7 @@
 - `src/approvals`: workflow de aprobacion humana.
 - `src/actions`: ejecucion controlada y auditable de acciones aprobadas.
 - `src/core`: errores, costes, budget guard, ids, auditoria y validacion.
+- `src/persistence`: snapshots JSON locales de estado operativo.
 - `src/server.js`: API HTTP nativa.
 - `public/`: UI interna para consola de tareas, resultados, approvals, knowledge, metrics, DLQ y audit trail.
 
@@ -57,6 +58,26 @@ POST /dlq/{event_id}/replay
 ```
 
 El reproceso vuelve a publicar el evento original en el stream donde fallo.
+
+## Persistencia local
+
+El servidor puede guardar y cargar snapshots JSON con:
+
+```http
+POST /state/save
+POST /state/load
+```
+
+Por defecto usa `data/state.json`, ignorado por Git. El snapshot incluye tareas,
+auditoria, approvals, ejecuciones, Knowledge Graph, presupuestos y streams.
+
+## Contract Test
+
+La suite incluye un worker dummy que valida el contrato minimo:
+
+```text
+Dispatcher -> task.dispatch.sre-support -> Worker -> task.result -> completed
+```
 
 ## Siguiente paso natural
 

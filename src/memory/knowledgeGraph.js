@@ -184,5 +184,12 @@ export class KnowledgeGraph {
       relations: this.relations
     };
   }
-}
 
+  load(snapshot = {}) {
+    this.entities = new Map();
+    for (const entity of snapshot.entities || []) {
+      this.entities.set(entity.id, entity);
+    }
+    this.relations = Array.isArray(snapshot.relations) ? [...snapshot.relations] : [];
+  }
+}

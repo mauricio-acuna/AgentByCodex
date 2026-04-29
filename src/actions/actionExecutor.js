@@ -142,5 +142,15 @@ export class ActionExecutor {
       return true;
     });
   }
-}
 
+  snapshot() {
+    return this.list();
+  }
+
+  load(executions = []) {
+    this.executions = new Map();
+    for (const execution of executions) {
+      this.executions.set(execution.execution_id, execution);
+    }
+  }
+}

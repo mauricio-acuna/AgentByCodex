@@ -21,6 +21,8 @@ Incluye:
 - API HTTP sin dependencias externas.
 - UI interna web para tareas, resultados, approvals, knowledge, metrics, DLQ y auditoria.
 - Knowledge Graph local con fuentes, confianza, relaciones y busqueda.
+- Persistencia local JSON para snapshots de estado.
+- Test de contrato dispatcher-worker incluido en la suite.
 - Tests en proceso unico para evitar restricciones de spawn del entorno.
 
 ## Requisitos
@@ -57,6 +59,12 @@ Health:
 
 ```text
 http://localhost:8080/health
+```
+
+Guardar estado local:
+
+```powershell
+Invoke-RestMethod -Method Post -Uri http://localhost:8080/state/save
 ```
 
 ## Ejemplo de tarea SRE

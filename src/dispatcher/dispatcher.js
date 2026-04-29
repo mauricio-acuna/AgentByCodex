@@ -183,6 +183,19 @@ export class Dispatcher {
     return [...this.tasks.values()];
   }
 
+  snapshot() {
+    return {
+      tasks: this.listTasks()
+    };
+  }
+
+  load(snapshot = {}) {
+    this.tasks = new Map();
+    for (const task of snapshot.tasks || []) {
+      this.tasks.set(task.task_id, task);
+    }
+  }
+
   cancelTask(taskId, reason) {
     const task = this.getTask(taskId);
     if (task.status === "completed") {

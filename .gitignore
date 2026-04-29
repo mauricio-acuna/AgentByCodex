@@ -13,3 +13,6 @@ coverage/
 dist/
 build/
 
+.tmp-tests/
+data/*.json
+!data/.gitkeep

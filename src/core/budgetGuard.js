@@ -72,5 +72,15 @@ export class BudgetGuard {
   getUsage(taskId) {
     return this.ensureTask(taskId);
   }
-}
 
+  snapshot() {
+    return [...this.usageByTask.values()];
+  }
+
+  load(usages = []) {
+    this.usageByTask = new Map();
+    for (const usage of usages) {
+      this.usageByTask.set(usage.task_id, usage);
+    }
+  }
+}

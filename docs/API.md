@@ -28,6 +28,22 @@ GET /
 GET /health
 ```
 
+## Estado local
+
+Guardar snapshot local:
+
+```http
+POST /state/save
+```
+
+Cargar snapshot local:
+
+```http
+POST /state/load
+```
+
+Por defecto el servidor usa `data/state.json`. Puedes cambiarlo con `STATE_FILE`.
+
 ## Crear tarea
 
 ```http

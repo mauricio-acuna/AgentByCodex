@@ -13,10 +13,10 @@ Leyenda: `[x]` hecho, `[~]` parcial, `[ ]` pendiente.
 - [~] Worker SDK con ejemplo end-to-end funcionando (codigo y tests escritos; falta `pytest` con red).
 - [x] Policy engine acepta tareas y bloquea acciones L2+ sin approval. Implementado en ruta Node con `ActionExecutor`.
 - [x] Cost tracking emite metrica por task_id. Implementado y verificado en ruta Node.
-- [ ] Tests de contrato dispatcher <-> worker en verde en CI.
+- [x] Tests de contrato dispatcher <-> worker en verde en ruta Node local.
 - [x] DLQ funcional con un caso de fallo. Verificado en ruta Node con fallo de permisos, presupuesto y replay.
 
-Estado: **5/7 cumplidos, 2/7 parciales**. Ya conviene planificar Fase B y abrir tracks paralelos con contratos de la ruta Node como referencia.
+Estado: **6/7 cumplidos, 1/7 parcial**. Ya conviene planificar Fase B y abrir tracks paralelos con contratos de la ruta Node como referencia.
 
 ## Hitos Fase A
 
@@ -88,8 +88,8 @@ Modulos en `packages/worker_sdk/src/aop_worker_sdk/`:
 - [ ] Alerta cuando se excede `Budget.max_usd`.
 
 ### Hito 6 - Tests de contrato dispatcher <-> worker (PENDIENTE)
-- [ ] Suite que arranca dispatcher + worker dummy con `InMemoryEventBus`.
-- [ ] Round-trip: input -> DispatchEvent -> handle -> ResultEvent -> respuesta.
+- [x] Suite que arranca dispatcher + worker dummy con `InMemoryEventBus`.
+- [x] Round-trip: input -> DispatchEvent -> handle -> ResultEvent -> respuesta.
 - [ ] DLQ end-to-end con worker que lanza error.
 - [ ] Cancelacion end-to-end.
 
@@ -148,6 +148,8 @@ Se avanzo con una implementacion ejecutable sin dependencias externas para no qu
 - [x] DLQ funcional ante fallo de permisos, presupuesto o worker.
 - [x] API/UI para inspeccionar y reprocesar DLQ.
 - [x] API HTTP nativa en `src/server.js`.
+- [x] Persistencia local JSON para tasks, audit, approvals, actions, KG, budgets y streams.
+- [x] Test de contrato dispatcher -> worker dummy -> task.result -> completed.
 - [x] UI interna en `public/` para tasks, resultados, approvals, knowledge, metrics, DLQ y audit trail.
 - [x] Tests locales verdes con `npm.cmd test`.
 
@@ -160,7 +162,7 @@ npm.cmd test
 Resultado:
 
 ```text
-17 test(s) passed
+19 test(s) passed
 ```
 
 Aviso: se alcanzaron 5 items del gate. Es momento de planificar Fase B si queremos paralelizar tracks, manteniendo el carril Node como comportamiento ejecutable de referencia.

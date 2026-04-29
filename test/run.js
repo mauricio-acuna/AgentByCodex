@@ -1,6 +1,13 @@
 import assert from "node:assert/strict";
+import { mkdir, rm } from "node:fs/promises";
+import { join } from "node:path";
 import { createApp } from "../src/app.js";
+import { AuditLog } from "../src/core/audit.js";
+import { BudgetGuard } from "../src/core/budgetGuard.js";
+import { InMemoryStreamBus, STREAMS } from "../src/bus/inMemoryStreamBus.js";
+import { Dispatcher } from "../src/dispatcher/dispatcher.js";
 import { buildMetrics } from "../src/observability/metrics.js";
+import { BaseWorker } from "../src/workers/baseWorker.js";
 
 function nextTick() {
   return new Promise((resolve) => setTimeout(resolve, 0));
@@ -10,6 +17,16 @@ const tests = [];
 
 function test(name, fn) {
   tests.push({ name, fn });
+}
+
+class ContractWorker extends BaseWorker {
+  async handle(event) {
+    return {
+      summary: `contract-ok:${event.task_id}`,
+      sources: [],
+      cost: this.costFor(event.payload.prompt)
+    };
+  }
 }
 
 test("routes SRE incident tasks to the SRE worker and returns grounded output", async () => {
@@ -30,6 +47,35 @@ test("routes SRE incident tasks to the SRE worker and returns grounded output", 
   assert.ok(completed.result.sources.length >= 3);
   assert.equal(completed.result.requires_human_approval, true);
   assert.equal(app.approvals.list({ taskId: task.task_id }).length, 1);
+});
+
+test("contract dispatcher worker roundtrip completes through task.result", async () => {
+  const audit = new AuditLog();
+  const bus = new InMemoryStreamBus({ audit });
+  const budgetGuard = new BudgetGuard({ audit });
+  const dispatcher = new Dispatcher({ bus, audit, budgetGuard });
+  dispatcher.attachResultListener();
+  const worker = new ContractWorker({
+    name: "contract-worker",
+    bus,
+    tools: null,
+    approvals: null,
+    audit
+  });
+  worker.attach(STREAMS.SRE);
+
+  const task = dispatcher.createTask({
+    prompt: "Investigate SRE contract routing",
+    requested_by: { id: "contract-user", team: "sre", roles: ["sre"] },
+    domain_hint: "sre"
+  });
+  await nextTick();
+
+  const completed = dispatcher.getTask(task.task_id);
+  assert.equal(completed.status, "completed");
+  assert.equal(completed.result.summary, `contract-ok:${task.task_id}`);
+  assert.equal(bus.list(STREAMS.RESULT).length, 1);
+  assert.ok(audit.list({ taskId: task.task_id }).some((event) => event.type === "dispatcher.complete"));
 });
 
 test("routes customer success tasks and keeps external message as a draft", async () => {
@@ -317,6 +363,38 @@ test("L4 actions are blocked outside the MVP", async () => {
     }),
     /outside the MVP/
   );
+});
+
+test("local JSON state store persists tasks approvals actions audit and knowledge", async () => {
+  const dir = join(process.cwd(), ".tmp-tests");
+  const stateFile = join(dir, `state-${Date.now()}.json`);
+  await mkdir(dir, { recursive: true });
+
+  const app = createApp({ stateFile });
+  const task = app.dispatcher.createTask({
+    prompt: "Investiga por que subieron los errores 5xx del servicio billing-api",
+    requested_by: { id: "ana", team: "sre", roles: ["sre"] },
+    domain_hint: "sre"
+  });
+  await nextTick();
+  const [approval] = app.approvals.list({ taskId: task.task_id });
+  app.approvals.decide(approval.approval_id, {
+    decision: "approved",
+    decidedBy: { id: "oncall", roles: ["admin"] }
+  });
+  app.actions.executeApproval(approval.approval_id, { id: "admin", roles: ["admin"] });
+  await app.stateStore.save(app);
+
+  const reloaded = createApp({ stateFile });
+  await reloaded.stateStore.load(reloaded);
+
+  assert.equal(reloaded.dispatcher.getTask(task.task_id).status, "completed");
+  assert.equal(reloaded.approvals.get(approval.approval_id).status, "approved");
+  assert.equal(reloaded.actions.list({ taskId: task.task_id }).length, 1);
+  assert.ok(reloaded.audit.list({ taskId: task.task_id }).length > 0);
+  assert.ok(reloaded.knowledgeGraph.snapshot().entities.length > 0);
+
+  await rm(stateFile, { force: true });
 });
 
 let failed = 0;

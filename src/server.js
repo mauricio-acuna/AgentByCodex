@@ -5,7 +5,7 @@ import { createApp } from "./app.js";
 import { buildMetrics } from "./observability/metrics.js";
 import { toErrorResponse } from "./core/errors.js";
 
-const app = createApp();
+const app = createApp({ stateFile: process.env.STATE_FILE || "data/state.json" });
 const port = Number(process.env.PORT || 8080);
 const publicRoot = join(process.cwd(), "public");
 
@@ -69,6 +69,14 @@ const server = createServer(async (req, res) => {
 
     if (req.method === "GET" && url.pathname === "/health") {
       return send(res, 200, { ok: true, service: "agentic-operations-platform" });
+    }
+
+    if (req.method === "POST" && url.pathname === "/state/save") {
+      return send(res, 200, await app.stateStore.save(app));
+    }
+
+    if (req.method === "POST" && url.pathname === "/state/load") {
+      return send(res, 200, await app.stateStore.load(app));
     }
 
     if (req.method === "POST" && url.pathname === "/tasks") {
@@ -154,6 +162,15 @@ const server = createServer(async (req, res) => {
     return send(res, status, toErrorResponse(error));
   }
 });
+
+try {
+  await app.stateStore.load(app);
+  console.log("Loaded state from data/state.json");
+} catch (error) {
+  if (error.code !== "ENOENT") {
+    console.warn(`State load skipped: ${error.message}`);
+  }
+}
 
 server.listen(port, () => {
   console.log(`Agentic Operations Platform listening on http://localhost:${port}`);
